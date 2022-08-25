@@ -8,32 +8,47 @@ namespace CityInfo.Controllers
     [Route("api/cities")]
     public class CitiesController : ControllerBase
     {
-        private readonly CitiesDataStore _citiesDataStore;
+        private readonly ICityInfoRepository _cityInfoRepository;
 
-        public CitiesController(
-            CitiesDataStore citiesDataStore)
+        public CitiesController(ICityInfoRepository cityInfoRepository)
         {
-            _citiesDataStore = citiesDataStore ?? throw new ArgumentNullException(nameof(citiesDataStore));
+            _cityInfoRepository = cityInfoRepository ?? throw new ArgumentNullException(nameof(cityInfoRepository));
         }
 
 
         [HttpGet()]
-        public ActionResult<IEnumerable<CityDto>> GetCities()
+        public async Task<ActionResult<IEnumerable<CityDto>>> GetCities()
         {
-            return Ok(_citiesDataStore.Cities);
+            var cityEntities = await _cityInfoRepository.GetCitiesAsync();
+
+            var results = new List<CityWithoutPointsOfInterestDto>();
+            foreach (var cityEntity in cityEntities)
+            {
+                results.Add(new CityWithoutPointsOfInterestDto
+                {
+                    Id = cityEntity.Id,
+                    Description = cityEntity.Description,
+                    Name = cityEntity.Name
+                });
+            }
+
+            return Ok(results);
+
+            //return Ok(_citiesDataStore.Cities);
         }
 
 
         [HttpGet("{id}")]
         public ActionResult<CityDto> GetCity(int id)
         {
-            // Find city
-            var cityObj = _citiesDataStore.Cities.FirstOrDefault(c => c.Id == id);
+            //// Find city
+            //var cityObj = _citiesDataStore.Cities.FirstOrDefault(c => c.Id == id);
 
-            if (cityObj == null)
-                return NotFound();
-            else
-                return Ok(cityObj);
+            //if (cityObj == null)
+            //    return NotFound();
+            //else
+            //    return Ok(cityObj);
+            return Ok();
         }
 
     }
